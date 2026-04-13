@@ -5,7 +5,7 @@ rule all:
     input:
         config["tree"]
 
-# STEP 1 — convert .ali → FASTA
+#Convert .ali to .fasta
 rule ali_to_fasta:
     input:
         config["structural_ali"]
@@ -16,7 +16,7 @@ rule ali_to_fasta:
         python scripts/ali_to_fasta.py {input} {output}
         """
 
-# STEP 2 — profile alignment
+#Profile alignment
 rule profile_alignment:
     input:
         aa=config["aa_alignment"],
@@ -28,7 +28,7 @@ rule profile_alignment:
         clustalo --p1 {input.aa} --p2 {input.struct} -o {output} --force
         """
 
-# STEP 3 — tree
+#Tree
 rule build_tree:
     input:
         config["final_alignment"]
