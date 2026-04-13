@@ -1,0 +1,6 @@
+aa_alignment: "data/aa_aligned.fasta"
+structural_ali: "data/structural.ali"
+
+structural_fasta: "results/structural.fasta"
+final_alignment: "results/final_alignment.fasta"
+tree: "results/tree.nwk"
