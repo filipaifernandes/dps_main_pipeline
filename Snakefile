@@ -36,5 +36,5 @@ rule build_tree:
         config["tree"]
     shell:
         """
-        fasttree -protein {input} > {output}
+        fasttree -lg {input} > {output}
         """
