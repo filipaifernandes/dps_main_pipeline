@@ -5,14 +5,11 @@ output_file = sys.argv[2]
 
 with open(input_file) as f:
     lines = f.readlines()
-
 with open(output_file, "w") as out:
     seq = ""
     header = ""
-
     for line in lines:
         line = line.strip()
-
         if line.startswith(">P1;"):
             if seq:
                 out.write(f">{header}\n{seq}\n")
@@ -27,6 +24,6 @@ with open(output_file, "w") as out:
 
         else:
             seq += line
-
+            
     if seq:
         out.write(f">{header}\n{seq}\n")
