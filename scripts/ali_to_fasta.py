@@ -1,31 +1,32 @@
 import sys
 
-inp = sys.argv[1]
-out = sys.argv[2]
+input_file = sys.argv[1]
+output_file = sys.argv[2]
 
-seqs = {}
-order = []
+with open(input_file) as f:
+    lines = f.readlines()
 
-current = None
+with open(output_file, "w") as out:
+    seq = ""
+    header = ""
 
-with open(inp) as f:
-    for line in f:
+    for line in lines:
         line = line.strip()
 
         if line.startswith(">P1;"):
-            current = line.split(";")[1]
-            seqs[current] = ""
-            order.append(current)
+            if seq:
+                out.write(f">{header}\n{seq}\n")
+                seq = ""
+            header = line.replace(">P1;", "")
 
-        elif line.startswith("sequence"):
+        elif line.startswith("structure") or line == "":
             continue
 
-        elif line == "" or line == "*":
-            continue
+        elif "*" in line:
+            seq += line.replace("*", "")
 
         else:
-            seqs[current] += line.replace("*", "")
+            seq += line
 
-with open(out, "w") as o:
-    for k in order:
-        o.write(f">{k}\n{seqs[k]}\n")
+    if seq:
+        out.write(f">{header}\n{seq}\n")
