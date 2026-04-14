@@ -1,7 +1,6 @@
 #Config file - Change it according to your data
-aa_alignment: "data/aa_aligned.fasta"
-structural_ali: "data/structural.ali"
+aa_alignment: "data/raw/aa.fasta"
+structural_fasta: "data/raw/structural.fasta"
 
-structural_fasta: "results/structural.fasta"
-final_alignment: "results/final_alignment.fasta"
-tree: "results/tree.nwk"
+final_alignment: "data/alignment/final_alignment.fasta"
+tree: "data/tree/tree.nwk"
