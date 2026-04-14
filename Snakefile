@@ -3,18 +3,9 @@ container: "docker://filipafernandes/dps_main:001"
 
 rule all:
     input:
+        config["structural_fasta"],
+        config["final_alignment"],
         config["tree"]
-
-#Convert .ali to .fasta
-rule ali_to_fasta:
-    input:
-        config["structural_ali"]
-    output:
-        config["structural_fasta"]
-    shell:
-        """
-        python scripts/ali_to_fasta.py {input} {output}
-        """
 
 #Profile alignment
 rule profile_alignment:
