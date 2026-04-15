@@ -23,11 +23,12 @@ Built with Snakemake and executed inside a Docker container — no manual steps,
 
 ## Overview
 
-The DPS Main Pipeline provides a **reproducible and automated workflow for integrating structural and amino acid sequence alignments of Dps proteins into a single unified phylogenetic analysis**. It takes a pre-computed structural alignment (in MODELLER `.ali` format) and a standard amino acid FASTA alignment, merges them via profile-profile alignment, and constructs a maximum-likelihood phylogenetic tree.
+The DPS Main Pipeline provides a **reproducible and automated workflow for integrating structural and amino acid sequence alignments of Dps proteins into a single unified phylogenetic analysis**. It takes a pre-computed structural alignment already in FASTA format (e.g. produced by the DPS Structural Pipeline) and a standard amino acid FASTA alignment, merges them via profile-profile alignment, and constructs a maximum-likelihood phylogenetic tree.
 
-Three distinct steps are combined:
-- **Format conversion** — converts MODELLER `.ali` structural alignments to standard FASTA format for downstream compatibility
-- **Profile-profile alignment** — merges the structural and amino acid alignments into a single combined alignment using Clustal Omega
+> The structural alignment is expected as a FASTA input. If you have a raw MODELLER `.ali` file, convert it first using the [DPS Structural Pipeline](https://github.com/yourname/dps_structural_pipeline).
+
+Two steps are combined:
+- **Profile-profile alignment** — merges a pre-computed structural alignment (FASTA) with an amino acid sequence alignment into a single unified alignment using Clustal Omega
 - **Phylogenetic tree inference** — maximum-likelihood tree construction from the combined alignment using FastTree
 
 > All steps run inside a Docker container for full reproducibility.
@@ -36,8 +37,7 @@ Three distinct steps are combined:
 
 ## Features
 
-- **Format conversion** — converts MODELLER `.ali` files to FASTA, stripping structure annotations cleanly
-- **Profile-profile alignment** — Clustal Omega merges amino acid and structural alignments while preserving both signal sources
+- **Profile-profile alignment** — Clustal Omega merges a pre-computed structural FASTA alignment with an amino acid alignment while preserving both signal sources
 - **Phylogenetic tree** — maximum-likelihood inference with FastTree's LG model (Newick output)
 - **Containerized** — all steps run inside an identical Docker environment
 - **Config-driven** — swap file paths in `config.yaml` to reuse the pipeline on any protein dataset
@@ -97,7 +97,6 @@ To reuse the pipeline for a different protein, update the input file paths accor
 
 | Step | Tool | Execution | Output |
 |---|---|---|---|
-| Format conversion `.ali` → FASTA | `ali_to_fasta.py` (Python) | Container | `data/raw/structural.fasta` |
 | Profile-profile alignment | Clustal Omega (`--p1`/`--p2`) | Container | `data/alignment/final_alignment.fasta` |
 | Phylogenetic tree | FastTree (`-lg`) | Container | `data/tree/tree.nwk` |
 
@@ -116,13 +115,10 @@ MKVLWAALLVTFAGCAKAKEVVVIVGPNATGKVALGHIDNVLVPPETPD
 MKVLWAALLVTFAGCAKAKEVVVIVGPNATGKVALGHIDNVLVPPETPD
 ```
 
-### Structural Alignment (`structural_ali`)
-- **Format**: MODELLER `.ali` format
-- **Content**: Structural alignment with secondary structure annotations
-- Key format markers:
-  - Lines starting with `>P1;` indicate sequence headers
-  - Lines with asterisks (`*`) mark alignment boundaries
-  - `structure:` lines contain secondary structure info (removed during conversion)
+### Structural Alignment (`structural_fasta`)
+- **Format**: FASTA
+- **Content**: Structural alignment already converted to standard FASTA format
+- This file is expected as a ready input — if you have a raw MODELLER `.ali` file, convert it first (e.g. using the DPS Structural Pipeline)
 
 ---
 
@@ -173,9 +169,6 @@ snakemake --dag | dot -Tpng > dag.png
 
 **File not found errors**
 → Double-check paths in `config.yaml` match your actual file locations; use absolute paths if relative paths cause issues
-
-**`ali_to_fasta.py` conversion fails**
-→ Inspect your `.ali` file manually with `head -30 data/raw/structural.ali` to verify it follows the expected MODELLER format
 
 For verbose output: `snakemake --use-singularity --cores 4 -v`
 
