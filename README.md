@@ -25,7 +25,7 @@ Built with Snakemake and executed inside a Docker container — no manual steps,
 
 The DPS Main Pipeline provides a **reproducible and automated workflow for integrating structural and amino acid sequence alignments of Dps proteins into a single unified phylogenetic analysis**. It takes a pre-computed structural alignment already in FASTA format (e.g. produced by the DPS Structural Pipeline) and a standard amino acid FASTA alignment, merges them via profile-profile alignment, and constructs a maximum-likelihood phylogenetic tree.
 
-> The structural alignment is expected as a FASTA input. If you have a raw MODELLER `.ali` file, convert it first using the [DPS Structural Pipeline](https://github.com/yourname/dps_structural_pipeline).
+> The structural alignment is expected as a FASTA input. If you have a raw MODELLER `.ali` file, convert it first using the [DPS Structural Pipeline](https://github.com/filipaifernandes/dps_structural_pipeline).
 
 Two steps are combined:
 - **Profile-profile alignment** — merges a pre-computed structural alignment (FASTA) with an amino acid sequence alignment into a single unified alignment using Clustal Omega
