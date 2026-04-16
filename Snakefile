@@ -1,11 +1,13 @@
 configfile: "config.yaml"
-container: "docker://filipafernandes/dps_main:001"
+container: "docker://filipafernandes/dps_main:002"
 
 rule all:
     input:
         config["structural_fasta"],
         config["final_alignment"],
-        config["tree"]
+        config["tree"],
+        "data/heatmap/sequence_identity.csv",
+        "data/heatmap/sequence_identity.png"
 
 #Profile alignment
 rule profile_alignment:
@@ -28,4 +30,18 @@ rule build_tree:
     shell:
         """
         fasttree -lg {input} > {output}
+        """
+
+rule sequence_heatmap:
+    input:
+        "data/alignment/final_alignment.fasta"
+    output:
+        "data/heatmap/sequence_identity.csv",
+        "data/heatmap/sequence_identity.png"
+    shell:
+        """
+        python scripts/sequence_heatmap.py \
+        {input} \
+        {output[0]} \
+        {output[1]}
         """
