@@ -23,13 +23,14 @@ Built with Snakemake and executed inside a Docker container — no manual steps,
 
 ## Overview
 
-The DPS Main Pipeline provides a **reproducible and automated workflow for integrating structural and amino acid sequence alignments of Dps proteins into a single unified phylogenetic analysis**. It takes a pre-computed structural alignment already in FASTA format (e.g. produced by the DPS Structural Pipeline) and a standard amino acid FASTA alignment, merges them via profile-profile alignment, and constructs a maximum-likelihood phylogenetic tree.
+The DPS Main Pipeline provides a **reproducible and automated workflow for integrating structural and amino acid sequence alignments of Dps proteins into a single unified phylogenetic analysis**. It takes a pre-computed structural alignment already in FASTA format (e.g. produced by the DPS Structural Pipeline) and a standard amino acid FASTA alignment, merges them via profile-profile alignment, constructs a maximum-likelihood phylogenetic tree, and generates a sequence identity heatmap from the final alignment.
 
 > The structural alignment is expected as a FASTA input. If you have a raw MODELLER `.ali` file, convert it first using the [DPS Structural Pipeline](https://github.com/filipaifernandes/dps_structural_pipeline).
 
-Two steps are combined:
+Three steps are combined:
 - **Profile-profile alignment** — merges a pre-computed structural alignment (FASTA) with an amino acid sequence alignment into a single unified alignment using Clustal Omega
 - **Phylogenetic tree inference** — maximum-likelihood tree construction from the combined alignment using FastTree
+- **Sequence identity heatmap** — pairwise sequence identity matrix computed from the final alignment, saved as a CSV and visualized as a heatmap (PNG)
 
 > All steps run inside a Docker container for full reproducibility.
 
@@ -39,6 +40,7 @@ Two steps are combined:
 
 - **Profile-profile alignment** — Clustal Omega merges a pre-computed structural FASTA alignment with an amino acid alignment while preserving both signal sources
 - **Phylogenetic tree** — maximum-likelihood inference with FastTree's LG model (Newick output)
+- **Sequence identity heatmap** — pairwise identity matrix across all sequences in the final alignment, exported as CSV and PNG
 - **Containerized** — all steps run inside an identical Docker environment
 - **Config-driven** — swap file paths in `config.yaml` to reuse the pipeline on any protein dataset
 
@@ -64,7 +66,7 @@ cd dps_main_pipeline
 snakemake --use-singularity --cores 4
 ```
 
-The container image (`docker://filipafernandes/dps_main:001`) is pulled automatically.
+The container image (`docker://filipafernandes/dps_main:002`) is pulled automatically.
 
 ---
 
@@ -89,6 +91,8 @@ tree: "data/tree/tree.nwk"
 | `final_alignment` | Output path for the merged profile alignment |
 | `tree` | Output path for the phylogenetic tree (Newick) |
 
+The heatmap outputs are written to `data/heatmap/` automatically and require no additional configuration.
+
 To reuse the pipeline for a different protein, update the input file paths accordingly.
 
 ---
@@ -99,6 +103,14 @@ To reuse the pipeline for a different protein, update the input file paths accor
 |---|---|---|---|
 | Profile-profile alignment | Clustal Omega (`--p1`/`--p2`) | Container | `data/alignment/final_alignment.fasta` |
 | Phylogenetic tree | FastTree (`-lg`) | Container | `data/tree/tree.nwk` |
+| Sequence identity heatmap | Python (`seaborn`, `BioPython`) | Container | `data/heatmap/sequence_identity.csv`, `data/heatmap/sequence_identity.png` |
+
+### Sequence Identity Heatmap
+
+The `sequence_heatmap` rule computes pairwise sequence identity across all sequences in the final alignment. Gap positions are excluded from the identity calculation. Results are saved as:
+
+- **`sequence_identity.csv`** — full pairwise identity matrix (rows and columns are sequence IDs)
+- **`sequence_identity.png`** — heatmap visualization using a `viridis` color scale (0–1), 300 dpi
 
 ---
 
@@ -110,9 +122,9 @@ To reuse the pipeline for a different protein, update the input file paths accor
 
 ```
 >protein_1
-MKVLWAALLVTFAGCAKAKEVVVIVGPNATGKVALGHIDNVLVPPETPD
+MKVLWAAЛЛVTFAGCAKAKEVVVIVGPNATGKVАЛGHIDNVLVPРETPD
 >protein_2
-MKVLWAALLVTFAGCAKAKEVVVIVGPNATGKVALGHIDNVLVPPETPD
+MKVLWAAЛЛVTFAGCAKAKEVVVIVGPNATGKVАЛGHIDNVLVPРETPD
 ```
 
 ### Structural Alignment (`structural_fasta`)
@@ -131,8 +143,11 @@ data/
 │   └── structural.fasta                # Converted structural alignment (FASTA)
 ├── alignment/
 │   └── final_alignment.fasta           # Combined profile alignment
-└── tree/
-    └── tree.nwk                        # Phylogenetic tree (Newick format)
+├── tree/
+│   └── tree.nwk                        # Phylogenetic tree (Newick format)
+└── heatmap/
+    ├── sequence_identity.csv           # Pairwise identity matrix
+    └── sequence_identity.png           # Heatmap visualization (300 dpi)
 ```
 
 The tree can be visualized with [FigTree](http://tree.bio.ed.ac.uk/software/figtree/), [iTOL](https://itol.embl.de/), or any Newick-compatible viewer.
@@ -155,7 +170,7 @@ snakemake --dag | dot -Tpng > dag.png
 - Snakemake tracks dependencies and only reruns changed rules
 - The Docker container pins all tool versions (Clustal Omega, FastTree, Python 3.13)
 - `config.yaml` makes the pipeline reusable for any alignment dataset
-- The container image is versioned (`dps_main:001`) for exact reproducibility
+- The container image is versioned (`dps_main:002`) for exact reproducibility
 
 ---
 
@@ -166,6 +181,9 @@ snakemake --dag | dot -Tpng > dag.png
 
 **FastTree warnings about low confidence**
 → Small alignments may produce low bootstrap values; ensure `final_alignment.fasta` contains more than 2 sequences
+
+**Heatmap errors (`ValueError: sequences are not properly aligned`)**
+→ The heatmap script requires all sequences to have the same length; verify that `final_alignment.fasta` is a proper multiple sequence alignment
 
 **File not found errors**
 → Double-check paths in `config.yaml` match your actual file locations; use absolute paths if relative paths cause issues
@@ -185,4 +203,4 @@ For verbose output: `snakemake --use-singularity --cores 4 -v`
 ## Contact
 
 **Filipa Fernandes** — Bioinformatics Student
-📧 [filipaifernandes.2005@gmail.com](mailto:filipaifernandes.2005@gmail.com)
+[filipaifernandes.2005@gmail.com](mailto:filipaifernandes.2005@gmail.com)
