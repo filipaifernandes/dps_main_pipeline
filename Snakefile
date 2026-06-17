@@ -7,7 +7,8 @@ rule all:
         config["final_alignment"],
         config["tree"],
         "data/heatmap/sequence_identity.csv",
-        "data/heatmap/sequence_identity.png"
+        "data/heatmap/sequence_identity.png",
+        "data/labels.txt"
 
 #Profile alignment
 rule profile_alignment:
@@ -18,7 +19,7 @@ rule profile_alignment:
         config["final_alignment"]
     shell:
         """
-        clustalo --p1 {input.aa} --p2 {input.struct} -o {output} --force
+        clustalo --p1 {input.struct} --p2 {input.aa} -o {output} --force
         """
 
 #Tree
@@ -45,3 +46,12 @@ rule sequence_heatmap:
         {output[0]} \
         {output[1]}
         """
+
+rule itol_labels:
+    input:
+        "data/alignment/final_alignment.fasta"
+    output:
+        "data/labels.txt"
+    singularity: None
+    script:
+        "scripts/itol_labels.py"
